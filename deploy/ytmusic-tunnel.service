@@ -1,0 +1,14 @@
+[Unit]
+Description=Cloudflare Tunnel ytmusic
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=blaster
+ExecStart=/usr/local/bin/cloudflared tunnel --config /home/blaster/.cloudflared/config.yml run ytmusic
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
