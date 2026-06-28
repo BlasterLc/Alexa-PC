@@ -57,18 +57,29 @@ class PrevHandler(AbstractRequestHandler):
         )
 
 
-class VolumeHandler(AbstractRequestHandler):
+class VolumeUpHandler(AbstractRequestHandler):
     def can_handle(self, handler_input: HandlerInput) -> bool:
-        return ask_utils.is_intent_name("VolumeIntent")(handler_input)
+        return ask_utils.is_intent_name("VolumeUpIntent")(handler_input)
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        direction = handler_input.request_envelope.request.intent.slots["direction"].value
-        vk = VK_CODES["vol_up"] if direction in ("subir", "arriba", "más", "sube") else VK_CODES["vol_down"]
-        word = "Subiendo" if vk == VK_CODES["vol_up"] else "Bajando"
-        send_key(vk)
+        send_key(VK_CODES["vol_up"])
         return (
             handler_input.response_builder
-            .speak(f"{word} el volumen.")
+            .speak("Subiendo el volumen.")
+            .set_should_end_session(False)
+            .response
+        )
+
+
+class VolumeDownHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_intent_name("VolumeDownIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        send_key(VK_CODES["vol_down"])
+        return (
+            handler_input.response_builder
+            .speak("Bajando el volumen.")
             .set_should_end_session(False)
             .response
         )
@@ -92,7 +103,7 @@ class PlaySongHandler(AbstractRequestHandler):
         video_id = results[0]["videoId"]
         title = results[0]["title"]
         url = f"https://music.youtube.com/watch?v={video_id}"
-        subprocess.run(["powershell.exe", "Start-Process", url], check=True)
+        subprocess.run(["cmd.exe", "/c", "start", "", "chrome.exe", f"--app={url}"], check=True)
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo {title}.")
@@ -119,7 +130,7 @@ class PlayArtistHandler(AbstractRequestHandler):
         browse_id = results[0]["browseId"]
         artist = results[0]["artist"]
         url = f"https://music.youtube.com/channel/{browse_id}"
-        subprocess.run(["powershell.exe", "Start-Process", url], check=True)
+        subprocess.run(["cmd.exe", "/c", "start", "", "chrome.exe", f"--app={url}"], check=True)
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo música de {artist}.")

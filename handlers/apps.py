@@ -38,7 +38,7 @@ class AppHandler(AbstractRequestHandler):
             )
             speech = f"Cerrando {app_key}."
         else:
-            subprocess.run(["powershell.exe", "Start-Process", exe], check=True)
+            subprocess.run(["cmd.exe", "/c", "start", "", exe], check=True)
             speech = f"Abriendo {app_key}."
 
         return (
