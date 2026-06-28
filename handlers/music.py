@@ -62,7 +62,7 @@ class VolumeUpHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("VolumeUpIntent")(handler_input)
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        send_key(VK_CODES["vol_up"])
+        send_key(VK_CODES["vol_up"], times=5)
         return (
             handler_input.response_builder
             .speak("Subiendo el volumen.")
@@ -76,7 +76,7 @@ class VolumeDownHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("VolumeDownIntent")(handler_input)
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        send_key(VK_CODES["vol_down"])
+        send_key(VK_CODES["vol_down"], times=5)
         return (
             handler_input.response_builder
             .speak("Bajando el volumen.")
