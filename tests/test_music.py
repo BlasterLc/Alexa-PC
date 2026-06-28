@@ -82,3 +82,4 @@ def test_playartist_searches_and_opens():
         )
         url_arg = " ".join(mock_run.call_args[0][0])
         assert "UC123" in url_arg
+
