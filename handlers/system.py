@@ -16,7 +16,7 @@ _PS_COMMANDS: dict[str, list[str]] = {
 _SYNONYMS: dict[str, str] = {
     "apagá": "apagar", "shutdown": "apagar",
     "reiniciá": "reiniciar", "restart": "reiniciar",
-    "bloqueá": "bloquear", "lock": "bloquear",
+    "bloqueá": "bloquear", "bloquea": "bloquear", "lock": "bloquear",
 }
 
 

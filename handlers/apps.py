@@ -20,27 +20,26 @@ class AppHandler(AbstractRequestHandler):
         app_name = slots["appName"].value or ""
         app_action = (slots["appAction"].value or "").lower()
 
-        exe = APPS.get(app_name)
-        if not exe:
+        app_key = next((k for k in APPS if k.lower() == app_name.lower()), None)
+        if not app_key:
             return (
                 handler_input.response_builder
                 .speak("No conozco esa aplicación.")
                 .set_should_end_session(False)
                 .response
             )
+        exe = APPS[app_key]
 
-        if app_action in _OPEN_SYNONYMS:
-            subprocess.run(["powershell.exe", "Start-Process", exe], check=True)
-            speech = f"Abriendo {app_name}."
-        elif app_action in _CLOSE_SYNONYMS:
+        if app_action in _CLOSE_SYNONYMS:
             process_name = exe.replace(".exe", "")
             subprocess.run(
                 ["powershell.exe", "Stop-Process", "-Name", process_name, "-Force"],
                 check=True,
             )
-            speech = f"Cerrando {app_name}."
+            speech = f"Cerrando {app_key}."
         else:
-            speech = "No entendí si quieres abrir o cerrar."
+            subprocess.run(["powershell.exe", "Start-Process", exe], check=True)
+            speech = f"Abriendo {app_key}."
 
         return (
             handler_input.response_builder

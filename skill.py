@@ -2,7 +2,7 @@ import ask_sdk_core.utils as ask_utils
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.handler_input import HandlerInput
-from ask_sdk_model import LaunchRequest, Response
+from ask_sdk_model import Response
 
 from handlers.music import (
     PlayPauseHandler, NextHandler, PrevHandler,
@@ -14,7 +14,7 @@ from handlers.apps import AppHandler
 
 class LaunchHandler(AbstractRequestHandler):
     def can_handle(self, handler_input: HandlerInput) -> bool:
-        return isinstance(handler_input.request_envelope.request, LaunchRequest)
+        return ask_utils.is_request_type("LaunchRequest")(handler_input)
 
     def handle(self, handler_input: HandlerInput) -> Response:
         return (
@@ -71,6 +71,14 @@ class FallbackHandler(AbstractRequestHandler):
         )
 
 
+class SessionEndedHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_request_type("SessionEndedRequest")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        return handler_input.response_builder.response
+
+
 sb = SkillBuilder()
 sb.add_request_handler(LaunchHandler())
 sb.add_request_handler(PlayPauseHandler())
@@ -85,5 +93,6 @@ sb.add_request_handler(AppHandler())
 sb.add_request_handler(HelpHandler())
 sb.add_request_handler(CancelStopHandler())
 sb.add_request_handler(FallbackHandler())
+sb.add_request_handler(SessionEndedHandler())
 
 skill = sb.create()

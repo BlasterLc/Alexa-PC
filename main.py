@@ -18,7 +18,7 @@ async def alexa_endpoint(request: Request) -> JSONResponse:
     body = await request.body()
     request_envelope = serializer.deserialize(body.decode("utf-8"), RequestEnvelope)
     response_envelope = skill.invoke(request_envelope=request_envelope, context=None)
-    return JSONResponse(content=json.loads(serializer.serialize(response_envelope)))
+    return JSONResponse(content=serializer.serialize(response_envelope))
 
 
 if __name__ == "__main__":
