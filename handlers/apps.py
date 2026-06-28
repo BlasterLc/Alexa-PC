@@ -45,6 +45,6 @@ class AppHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak(speech)
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )

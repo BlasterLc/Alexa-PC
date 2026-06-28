@@ -50,7 +50,7 @@ class SystemHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("No entendí esa acción.")
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )
 
