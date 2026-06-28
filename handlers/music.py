@@ -24,7 +24,7 @@ class PlayPauseHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Listo.")
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )
 
@@ -38,7 +38,7 @@ class NextHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Siguiente.")
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )
 
@@ -52,7 +52,7 @@ class PrevHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Anterior.")
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )
 
@@ -66,7 +66,7 @@ class VolumeUpHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Subiendo el volumen.")
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )
 
@@ -80,7 +80,7 @@ class VolumeDownHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Bajando el volumen.")
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )
 
@@ -107,7 +107,7 @@ class PlaySongHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo {title}.")
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )
 
@@ -134,6 +134,6 @@ class PlayArtistHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo música de {artist}.")
-            .set_should_end_session(False)
+            .ask("¿Algo más?")
             .response
         )
