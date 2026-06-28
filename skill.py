@@ -10,6 +10,7 @@ from handlers.music import (
 )
 from handlers.system import SystemHandler, SystemConfirmHandler
 from handlers.apps import AppHandler
+from handlers.urls import UrlHandler
 
 
 class LaunchHandler(AbstractRequestHandler):
@@ -91,6 +92,7 @@ sb.add_request_handler(PlayArtistHandler())
 sb.add_request_handler(SystemHandler())
 sb.add_request_handler(SystemConfirmHandler())
 sb.add_request_handler(AppHandler())
+sb.add_request_handler(UrlHandler())
 sb.add_request_handler(HelpHandler())
 sb.add_request_handler(CancelStopHandler())
 sb.add_request_handler(FallbackHandler())
