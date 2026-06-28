@@ -12,15 +12,17 @@ VK_CODES: dict[str, int] = {
     "vol_mute": 0xAD,
 }
 
-_PS_KEY_SCRIPT = (
+_PS_ADDTYPE = (
     "Add-Type -MemberDefinition '"
     '[DllImport("user32.dll")] public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);'
     "' -Name 'User32' -Namespace 'Win32' -ErrorAction SilentlyContinue;"
-    "[Win32.User32]::keybd_event({vk}, 0, 0, [UIntPtr]::Zero);"
-    "[Win32.User32]::keybd_event({vk}, 0, 2, [UIntPtr]::Zero)"
 )
 
 
-def send_key(vk_code: int) -> None:
-    script = _PS_KEY_SCRIPT.format(vk=hex(vk_code))
+def send_key(vk_code: int, times: int = 1) -> None:
+    press = (
+        f"[Win32.User32]::keybd_event({hex(vk_code)}, 0, 0, [UIntPtr]::Zero);"
+        f"[Win32.User32]::keybd_event({hex(vk_code)}, 0, 2, [UIntPtr]::Zero);"
+    )
+    script = _PS_ADDTYPE + press * times
     subprocess.run([POWERSHELL_EXE, "-Command", script], check=True)
