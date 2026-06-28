@@ -6,6 +6,7 @@ from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 
 from config import APPS
+from handlers.base import CMD_EXE, POWERSHELL_EXE
 
 _OPEN_SYNONYMS = {"abrir", "abrí", "abre", "lanzar", "lanzá"}
 _CLOSE_SYNONYMS = {"cerrar", "cerrá", "cierra", "matar", "matá"}
@@ -33,12 +34,12 @@ class AppHandler(AbstractRequestHandler):
         if app_action in _CLOSE_SYNONYMS:
             process_name = exe.replace(".exe", "")
             subprocess.run(
-                ["powershell.exe", "Stop-Process", "-Name", process_name, "-Force"],
+                [POWERSHELL_EXE, "Stop-Process", "-Name", process_name, "-Force"],
                 check=True,
             )
             speech = f"Cerrando {app_key}."
         else:
-            subprocess.run(["cmd.exe", "/c", "start", "", exe], check=True)
+            subprocess.run([CMD_EXE, "/c", "start", "", exe], check=True)
             speech = f"Abriendo {app_key}."
 
         return (

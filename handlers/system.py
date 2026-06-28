@@ -1,6 +1,7 @@
 import subprocess
 
 import ask_sdk_core.utils as ask_utils
+from handlers.base import POWERSHELL_EXE
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
@@ -8,9 +9,9 @@ from ask_sdk_model import Response
 _DESTRUCTIVE = {"apagar", "reiniciar"}
 
 _PS_COMMANDS: dict[str, list[str]] = {
-    "apagar": ["powershell.exe", "Stop-Computer", "-Force"],
-    "reiniciar": ["powershell.exe", "Restart-Computer", "-Force"],
-    "bloquear": ["powershell.exe", "-Command", "rundll32.exe user32.dll,LockWorkStation"],
+    "apagar": [POWERSHELL_EXE, "Stop-Computer", "-Force"],
+    "reiniciar": [POWERSHELL_EXE, "Restart-Computer", "-Force"],
+    "bloquear": [POWERSHELL_EXE, "-Command", "rundll32.exe user32.dll,LockWorkStation"],
 }
 
 _SYNONYMS: dict[str, str] = {

@@ -1,5 +1,8 @@
 import subprocess
 
+CMD_EXE = "/mnt/c/Windows/System32/cmd.exe"
+POWERSHELL_EXE = "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+
 VK_CODES: dict[str, int] = {
     "play_pause": 0xB3,
     "next": 0xB0,
@@ -20,4 +23,4 @@ _PS_KEY_SCRIPT = (
 
 def send_key(vk_code: int) -> None:
     script = _PS_KEY_SCRIPT.format(vk=hex(vk_code))
-    subprocess.run(["powershell.exe", "-Command", script], check=True)
+    subprocess.run([POWERSHELL_EXE, "-Command", script], check=True)
