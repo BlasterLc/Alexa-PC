@@ -1,0 +1,14 @@
+[Unit]
+Description=YtMusic-Conec FastAPI Server
+After=network.target
+
+[Service]
+Type=simple
+User=blaster
+WorkingDirectory=/home/blaster/YtMusic-Conec
+ExecStart=/home/blaster/YtMusic-Conec/.venv/bin/python main.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
