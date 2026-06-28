@@ -9,7 +9,7 @@ from ytmusicapi import YTMusic
 
 from handlers.base import send_key, VK_CODES
 
-_OAUTH_PATH = Path(__file__).parent.parent / "oauth.json"
+_OAUTH_PATH = Path(__file__).parent.parent / "browser.json"
 
 
 class PlayPauseHandler(AbstractRequestHandler):
@@ -80,7 +80,7 @@ class PlaySongHandler(AbstractRequestHandler):
 
     def handle(self, handler_input: HandlerInput) -> Response:
         song_name = handler_input.request_envelope.request.intent.slots["songName"].value
-        yt = YTMusic(str(_OAUTH_PATH))
+        yt = YTMusic(str(_OAUTH_PATH), language="es")
         results = yt.search(song_name, filter="songs", limit=1)
         if not results:
             return (
@@ -107,7 +107,7 @@ class PlayArtistHandler(AbstractRequestHandler):
 
     def handle(self, handler_input: HandlerInput) -> Response:
         artist_name = handler_input.request_envelope.request.intent.slots["artistName"].value
-        yt = YTMusic(str(_OAUTH_PATH))
+        yt = YTMusic(str(_OAUTH_PATH), language="es")
         results = yt.search(artist_name, filter="artists", limit=1)
         if not results:
             return (

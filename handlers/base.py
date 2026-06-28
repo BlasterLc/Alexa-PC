@@ -13,8 +13,8 @@ _PS_KEY_SCRIPT = (
     "Add-Type -MemberDefinition '"
     '[DllImport("user32.dll")] public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);'
     "' -Name 'User32' -Namespace 'Win32' -ErrorAction SilentlyContinue;"
-    "[Win32.User32]::keybd_event({vk}, 0, 0, 0);"
-    "[Win32.User32]::keybd_event({vk}, 0, 2, 0)"
+    "[Win32.User32]::keybd_event({vk}, 0, 0, [UIntPtr]::Zero);"
+    "[Win32.User32]::keybd_event({vk}, 0, 2, [UIntPtr]::Zero)"
 )
 
 
