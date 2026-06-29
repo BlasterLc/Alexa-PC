@@ -1,4 +1,5 @@
 import json
+import logging
 import subprocess
 import time
 
@@ -6,6 +7,8 @@ import requests
 import websocket
 
 from handlers.base import CMD_EXE
+
+logger = logging.getLogger(__name__)
 
 _CHROME_PORT = 9222   # Chrome debug port (Windows localhost only)
 _PROXY_PORT = 9223    # netsh portproxy port reachable from WSL2
@@ -37,7 +40,8 @@ def _get_tabs() -> list[dict] | None:
     try:
         r = requests.get(f"{_cdp_base()}/json", timeout=1)
         return r.json()
-    except Exception:
+    except Exception as e:
+        logger.warning("CDP not available at %s: %s", _cdp_base(), e)
         return None
 
 
@@ -48,6 +52,18 @@ def _navigate(ws_url: str, url: str) -> None:
     ws.send(json.dumps({"id": 1, "method": "Page.navigate", "params": {"url": url}}))
     ws.recv()
     ws.close()
+
+
+def _start_chrome(url: str) -> None:
+    subprocess.run(
+        [CMD_EXE, "/c", "start", "", _CHROME_EXE,
+         f"--user-data-dir={_USER_DATA_DIR}",
+         f"--remote-debugging-port={_CHROME_PORT}",
+         f"--app={url}"],
+        check=True,
+        cwd="/mnt/c",
+    )
+    time.sleep(2)
 
 
 def open_or_navigate(url: str) -> None:
@@ -71,13 +87,5 @@ def open_or_navigate(url: str) -> None:
         except Exception:
             pass
 
-    # Chrome not running → start with separate profile and debug port
-    subprocess.run(
-        [CMD_EXE, "/c", "start", "", _CHROME_EXE,
-         f"--user-data-dir={_USER_DATA_DIR}",
-         f"--remote-debugging-port={_CHROME_PORT}",
-         "--profile-directory=Default",
-         "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod"],
-        check=True,
-    )
-    time.sleep(2)
+    # Chrome not running → start with the song URL directly
+    _start_chrome(url)
