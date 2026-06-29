@@ -59,6 +59,7 @@ def _start_chrome(url: str) -> None:
         [CMD_EXE, "/c", "start", "", _CHROME_EXE,
          f"--user-data-dir={_USER_DATA_DIR}",
          f"--remote-debugging-port={_CHROME_PORT}",
+         "--remote-allow-origins=*",
          f"--app={url}"],
         check=True,
         cwd="/mnt/c",
