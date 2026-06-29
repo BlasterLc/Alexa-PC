@@ -46,12 +46,33 @@ def _get_tabs() -> list[dict] | None:
 
 
 def _navigate(ws_url: str, url: str) -> None:
-    # ws_url from Chrome uses 127.0.0.1 — replace with Win host so WSL2 can reach it
     ws_url = ws_url.replace(f"127.0.0.1:{_CHROME_PORT}", f"{_win_host()}:{_PROXY_PORT}")
-    ws = websocket.create_connection(ws_url, timeout=3)
-    ws.send(json.dumps({"id": 1, "method": "Page.navigate", "params": {"url": url}}))
-    ws.recv()
-    ws.close()
+    ws = websocket.create_connection(ws_url, timeout=5)
+    try:
+        # Enable Page events so we can intercept the beforeunload dialog
+        ws.send(json.dumps({"id": 1, "method": "Page.enable"}))
+        ws.recv()
+
+        ws.send(json.dumps({"id": 2, "method": "Page.navigate", "params": {"url": url}}))
+
+        # Wait for navigation response; auto-dismiss any "leave page?" dialog
+        deadline = time.time() + 8
+        while time.time() < deadline:
+            ws.settimeout(max(0.1, deadline - time.time()))
+            try:
+                msg = json.loads(ws.recv())
+            except websocket.WebSocketTimeoutException:
+                break
+            if msg.get("method") == "Page.javascriptDialogOpening":
+                ws.send(json.dumps({
+                    "id": 3,
+                    "method": "Page.handleJavaScriptDialog",
+                    "params": {"accept": True},
+                }))
+            elif msg.get("id") == 2:
+                break
+    finally:
+        ws.close()
 
 
 def _start_chrome(url: str) -> None:
