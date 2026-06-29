@@ -15,7 +15,16 @@ class UrlHandler(AbstractRequestHandler):
 
     def handle(self, handler_input: HandlerInput) -> Response:
         slots = handler_input.request_envelope.request.intent.slots
-        site_name = slots["siteName"].value or ""
+        slot = slots["siteName"]
+        # Prefer Alexa's resolved canonical value over raw speech
+        try:
+            resolutions = slot.resolutions.resolutions_per_authority
+            if resolutions and resolutions[0].status.code.value == "ER_SUCCESS_MATCH":
+                site_name = resolutions[0].values[0].value.name
+            else:
+                site_name = slot.value or ""
+        except Exception:
+            site_name = slot.value or ""
 
         site_key = next((k for k in URLS if k.lower() == site_name.lower()), None)
         if not site_key:
