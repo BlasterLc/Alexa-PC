@@ -76,7 +76,8 @@ def open_or_navigate(url: str) -> None:
         [CMD_EXE, "/c", "start", "", _CHROME_EXE,
          f"--user-data-dir={_USER_DATA_DIR}",
          f"--remote-debugging-port={_CHROME_PORT}",
-         f"--app=https://music.youtube.com"],
+         "--profile-directory=Default",
+         "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod"],
         check=True,
     )
     time.sleep(2)
