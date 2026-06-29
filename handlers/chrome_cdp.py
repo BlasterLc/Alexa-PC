@@ -9,6 +9,8 @@ from handlers.base import CMD_EXE
 
 _PORT = 9222
 _CDP_BASE = f"http://localhost:{_PORT}"
+_CHROME_PROXY = "C:\\Program Files\\Google\\Chrome\\Application\\chrome_proxy.exe"
+_APP_ID = "cinhimbnkkaeohfgghhklpknlkffjgod"
 
 
 def _get_tabs() -> list[dict] | None:
@@ -48,11 +50,12 @@ def open_or_navigate(url: str) -> None:
         except Exception:
             pass
 
-    # Chrome not running with debug port → start it
+    # Chrome not running with debug port → start via chrome_proxy.exe (same as taskbar pin)
     subprocess.run(
-        [CMD_EXE, "/c", "start", "", "chrome.exe",
-         f"--remote-debugging-port={_PORT}", f"--app={url}"],
+        [CMD_EXE, "/c", "start", "", _CHROME_PROXY,
+         f"--remote-debugging-port={_PORT}",
+         "--profile-directory=Default",
+         f"--app-id={_APP_ID}"],
         check=True,
     )
-    # Give Chrome a moment to initialize the debug port for the next call
     time.sleep(2)
