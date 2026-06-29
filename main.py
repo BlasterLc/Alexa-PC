@@ -1,5 +1,4 @@
-import json
-import subprocess
+import logging
 import uvicorn
 
 from fastapi import FastAPI, Request
@@ -10,6 +9,9 @@ from ask_sdk_core.serialize import DefaultSerializer
 from config import PORT
 from skill import skill
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
 serializer = DefaultSerializer()
 
@@ -17,6 +19,8 @@ serializer = DefaultSerializer()
 async def alexa_endpoint(request: Request) -> JSONResponse:
     body = await request.body()
     request_envelope = serializer.deserialize(body.decode("utf-8"), RequestEnvelope)
+    req = request_envelope.request
+    logger.info("Request type: %s | intent: %s", req.object_type, getattr(req, "intent", None))
     response_envelope = skill.invoke(request_envelope=request_envelope, context=None)
     return JSONResponse(content=serializer.serialize(response_envelope))
 
