@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 
 import ask_sdk_core.utils as ask_utils
@@ -7,7 +6,8 @@ from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from ytmusicapi import YTMusic
 
-from handlers.base import send_key, VK_CODES, CMD_EXE
+from handlers.base import send_key, VK_CODES
+from handlers.chrome_cdp import open_or_navigate
 
 _OAUTH_PATH = Path(__file__).parent.parent / "browser.json"
 
@@ -103,7 +103,7 @@ class PlaySongHandler(AbstractRequestHandler):
         video_id = results[0]["videoId"]
         title = results[0]["title"]
         url = f"https://music.youtube.com/watch?v={video_id}"
-        subprocess.run([CMD_EXE, "/c", "start", "", "chrome.exe", f"--app={url}"], check=True)
+        open_or_navigate(url)
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo {title}.")
@@ -130,7 +130,7 @@ class PlayArtistHandler(AbstractRequestHandler):
         browse_id = results[0]["browseId"]
         artist = results[0]["artist"]
         url = f"https://music.youtube.com/channel/{browse_id}"
-        subprocess.run([CMD_EXE, "/c", "start", "", "chrome.exe", f"--app={url}"], check=True)
+        open_or_navigate(url)
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo música de {artist}.")
