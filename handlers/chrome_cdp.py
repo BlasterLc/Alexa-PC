@@ -60,6 +60,8 @@ def _start_chrome(url: str) -> None:
          f"--user-data-dir={_USER_DATA_DIR}",
          f"--remote-debugging-port={_CHROME_PORT}",
          "--remote-allow-origins=*",
+         "--window-size=1200,800",
+         "--window-position=360,140",
          f"--app={url}"],
         check=True,
         cwd="/mnt/c",
