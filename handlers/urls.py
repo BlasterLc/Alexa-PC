@@ -27,7 +27,7 @@ class UrlHandler(AbstractRequestHandler):
             )
 
         url = URLS[site_key]
-        subprocess.run([CMD_EXE, "/c", "start", "", "chrome.exe", url], check=True)
+        subprocess.run([CMD_EXE, "/c", "start", "", url], check=True)
         return (
             handler_input.response_builder
             .speak(f"Abriendo {site_key}.")
