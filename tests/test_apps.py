@@ -13,7 +13,7 @@ def test_open_chrome():
     with patch("handlers.apps.subprocess.run") as mock_run:
         AppHandler().handle(hi)
         cmd = " ".join(mock_run.call_args[0][0])
-        assert "Start-Process" in cmd
+        assert "start" in cmd
         assert "chrome.exe" in cmd
 
 
