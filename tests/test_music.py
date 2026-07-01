@@ -1,6 +1,10 @@
 from unittest.mock import patch
-from handlers.music import PlayPauseHandler, NextHandler, PrevHandler, VolumeHandler, PlaySongHandler, PlayArtistHandler
+from handlers.music import (
+    PlayPauseHandler, NextHandler, PrevHandler,
+    VolumeUpHandler, VolumeDownHandler, PlaySongHandler, PlayArtistHandler,
+)
 from tests.conftest import make_handler_input
+
 
 def test_playpause_can_handle():
     hi = make_handler_input("AMAZON.PauseIntent")
@@ -28,18 +32,18 @@ def test_prev_sends_key():
         mock_key.assert_called_once_with(0xB1)
 
 
-def test_volume_up():
-    hi = make_handler_input("VolumeIntent", slots={"direction": "subir"})
+def test_volume_up_sends_key_five_times():
+    hi = make_handler_input("VolumeUpIntent")
     with patch("handlers.music.send_key") as mock_key:
-        VolumeHandler().handle(hi)
-        mock_key.assert_called_once_with(0xAF)
+        VolumeUpHandler().handle(hi)
+        mock_key.assert_called_once_with(0xAF, times=5)
 
 
-def test_volume_down():
-    hi = make_handler_input("VolumeIntent", slots={"direction": "bajar"})
+def test_volume_down_sends_key_five_times():
+    hi = make_handler_input("VolumeDownIntent")
     with patch("handlers.music.send_key") as mock_key:
-        VolumeHandler().handle(hi)
-        mock_key.assert_called_once_with(0xAE)
+        VolumeDownHandler().handle(hi)
+        mock_key.assert_called_once_with(0xAE, times=5)
 
 
 def test_playsong_can_handle():
@@ -47,39 +51,36 @@ def test_playsong_can_handle():
     assert PlaySongHandler().can_handle(hi) is True
 
 
-def test_playsong_searches_and_opens():
+def test_playsong_searches_and_navigates():
     hi = make_handler_input("PlaySongIntent", slots={"songName": "Bohemian Rhapsody"})
     fake_results = [{"videoId": "abc123", "title": "Bohemian Rhapsody"}]
     with patch("handlers.music.YTMusic") as MockYT, \
-         patch("handlers.music.subprocess.run") as mock_run:
+         patch("handlers.music.open_or_navigate") as mock_nav:
         MockYT.return_value.search.return_value = fake_results
         PlaySongHandler().handle(hi)
         MockYT.return_value.search.assert_called_once_with(
             "Bohemian Rhapsody", filter="songs", limit=1
         )
-        url_arg = " ".join(mock_run.call_args[0][0])
-        assert "abc123" in url_arg
+        assert "abc123" in mock_nav.call_args[0][0]
 
 
 def test_playsong_no_results():
     hi = make_handler_input("PlaySongIntent", slots={"songName": "xyzzy"})
     with patch("handlers.music.YTMusic") as MockYT, \
-         patch("handlers.music.subprocess.run"):
+         patch("handlers.music.open_or_navigate"):
         MockYT.return_value.search.return_value = []
         PlaySongHandler().handle(hi)
         hi.response_builder.speak.assert_called_with("No encontré esa canción.")
 
 
-def test_playartist_searches_and_opens():
+def test_playartist_searches_and_navigates():
     hi = make_handler_input("PlayArtistIntent", slots={"artistName": "Radiohead"})
     fake_results = [{"browseId": "UC123", "artist": "Radiohead"}]
     with patch("handlers.music.YTMusic") as MockYT, \
-         patch("handlers.music.subprocess.run") as mock_run:
+         patch("handlers.music.open_or_navigate") as mock_nav:
         MockYT.return_value.search.return_value = fake_results
         PlayArtistHandler().handle(hi)
         MockYT.return_value.search.assert_called_once_with(
             "Radiohead", filter="artists", limit=1
         )
-        url_arg = " ".join(mock_run.call_args[0][0])
-        assert "UC123" in url_arg
-
+        assert "UC123" in mock_nav.call_args[0][0]
