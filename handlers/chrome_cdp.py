@@ -90,6 +90,60 @@ def _start_chrome(url: str) -> None:
     time.sleep(2)
 
 
+def add_to_queue(video_id: str) -> bool:
+    """Add a video to the YT Music queue via CDP JS injection.
+
+    Returns True if JS was executed, False if no YT Music tab is open.
+    """
+    tabs = _get_tabs()
+    if tabs is None:
+        return False
+
+    yt_tab = next(
+        (t for t in tabs
+         if "music.youtube.com" in t.get("url", "") and t.get("type") == "page"),
+        None,
+    )
+    if yt_tab is None:
+        return False
+
+    ws_url = yt_tab["webSocketDebuggerUrl"].replace(
+        f"127.0.0.1:{_CHROME_PORT}", f"{_win_host()}:{_PROXY_PORT}"
+    )
+
+    js = f"""
+    (function() {{
+        var videoId = '{video_id}';
+        var url = 'https://music.youtube.com/watch?v=' + videoId + '&a=add-to-queue';
+        fetch(url);
+        // YT Music internal queue API
+        var renderer = document.querySelector('ytmusic-player-bar');
+        if (renderer && renderer.queue_) {{
+            renderer.queue_.addToQueue(videoId);
+            return 'queued';
+        }}
+        // Fallback: dispatch custom event that YT Music listens to
+        document.dispatchEvent(new CustomEvent('yt-navigate-finish'));
+        window.location.assign('https://music.youtube.com/watch?v=' + videoId + '&list=RDAMVM' + videoId);
+        return 'navigated';
+    }})()
+    """
+
+    try:
+        ws = websocket.create_connection(ws_url, timeout=5)
+        ws.send(json.dumps({
+            "id": 10,
+            "method": "Runtime.evaluate",
+            "params": {"expression": js, "returnByValue": True},
+        }))
+        ws.recv()
+        ws.close()
+        return True
+    except Exception as e:
+        logger.warning("add_to_queue JS injection failed: %s", e)
+        return False
+
+
 def open_or_navigate(url: str) -> None:
     """Navigate the existing YT Music window to url, or open Chrome if not running."""
     tabs = _get_tabs()

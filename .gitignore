@@ -4,3 +4,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
+
+# ytmusicapi auth (contains Google cookies — never commit)
+browser.json
+
+# superpowers brainstorm session state
+.superpowers/
