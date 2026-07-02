@@ -10,3 +10,5 @@ browser.json
 
 # superpowers brainstorm session state
 .superpowers/
+# Notas de trabajo internas (superpowers plans/specs)
+docs/superpowers/
