@@ -84,3 +84,74 @@ def test_playartist_searches_and_navigates():
             "Radiohead", filter="artists", limit=1
         )
         assert "UC123" in mock_nav.call_args[0][0]
+
+
+# --- Cerrar sesión en comandos que dejan música sonando fuerte ---
+# (evita falsos VolumeUpIntent por el micrófono abierto captando la música)
+
+def test_next_ends_session():
+    hi = make_handler_input("AMAZON.NextIntent")
+    with patch("handlers.music.send_key"):
+        NextHandler().handle(hi)
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()
+
+
+def test_prev_ends_session():
+    hi = make_handler_input("AMAZON.PreviousIntent")
+    with patch("handlers.music.send_key"):
+        PrevHandler().handle(hi)
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()
+
+
+def test_volume_up_ends_session():
+    hi = make_handler_input("VolumeUpIntent")
+    with patch("handlers.music.send_key"):
+        VolumeUpHandler().handle(hi)
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()
+
+
+def test_volume_down_ends_session():
+    hi = make_handler_input("VolumeDownIntent")
+    with patch("handlers.music.send_key"):
+        VolumeDownHandler().handle(hi)
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()
+
+
+def test_playsong_success_ends_session():
+    hi = make_handler_input("PlaySongIntent", slots={"songName": "Bohemian Rhapsody"})
+    with patch("handlers.music.YTMusic") as MockYT, \
+         patch("handlers.music.open_or_navigate"):
+        MockYT.return_value.search.return_value = [{"videoId": "abc123", "title": "X"}]
+        PlaySongHandler().handle(hi)
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()
+
+
+def test_playartist_success_ends_session():
+    hi = make_handler_input("PlayArtistIntent", slots={"artistName": "Radiohead"})
+    with patch("handlers.music.YTMusic") as MockYT, \
+         patch("handlers.music.open_or_navigate"):
+        MockYT.return_value.search.return_value = [{"browseId": "UC123", "artist": "X"}]
+        PlayArtistHandler().handle(hi)
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()
+
+
+def test_resume_ends_session():
+    hi = make_handler_input("AMAZON.ResumeIntent")
+    with patch("handlers.music.send_key"):
+        PlayPauseHandler().handle(hi)
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()
+
+
+def test_pause_keeps_session_open():
+    # Pause no deja música sonando -> el micrófono abierto es seguro, mantenemos el encadenamiento
+    hi = make_handler_input("AMAZON.PauseIntent")
+    with patch("handlers.music.send_key"):
+        PlayPauseHandler().handle(hi)
+    hi.response_builder.ask.assert_called_with("¿Algo más?")

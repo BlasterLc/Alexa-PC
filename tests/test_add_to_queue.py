@@ -124,3 +124,6 @@ def test_add_to_queue_handler_success():
         AddToQueueHandler().handle(hi)
     mock_queue.assert_called_once_with("abc123", "bohemian rhapsody")
     hi.response_builder.speak.assert_called_with("Bohemian Rhapsody agregada a la cola.")
+    # cierra la sesión: música sonando fuerte -> mic abierto dispara falsos VolumeUpIntent
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()

@@ -21,12 +21,12 @@ class PlayPauseHandler(AbstractRequestHandler):
 
     def handle(self, handler_input: HandlerInput) -> Response:
         send_key(VK_CODES["play_pause"])
-        return (
-            handler_input.response_builder
-            .speak("Listo.")
-            .ask("¿Algo más?")
-            .response
-        )
+        rb = handler_input.response_builder.speak("Listo.")
+        # Resume deja música sonando fuerte -> cerramos sesión para que el mic
+        # abierto no capte el audio y dispare falsos intents (ver VolumeUpIntent).
+        if ask_utils.is_intent_name("AMAZON.ResumeIntent")(handler_input):
+            return rb.set_should_end_session(True).response
+        return rb.ask("¿Algo más?").response
 
 
 class NextHandler(AbstractRequestHandler):
@@ -38,7 +38,7 @@ class NextHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Siguiente.")
-            .ask("¿Algo más?")
+            .set_should_end_session(True)
             .response
         )
 
@@ -52,7 +52,7 @@ class PrevHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Anterior.")
-            .ask("¿Algo más?")
+            .set_should_end_session(True)
             .response
         )
 
@@ -66,7 +66,7 @@ class VolumeUpHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Subiendo el volumen.")
-            .ask("¿Algo más?")
+            .set_should_end_session(True)
             .response
         )
 
@@ -80,7 +80,7 @@ class VolumeDownHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak("Bajando el volumen.")
-            .ask("¿Algo más?")
+            .set_should_end_session(True)
             .response
         )
 
@@ -107,7 +107,7 @@ class PlaySongHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo {title}.")
-            .ask("¿Algo más?")
+            .set_should_end_session(True)
             .response
         )
 
@@ -134,7 +134,7 @@ class PlayArtistHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo música de {artist}.")
-            .ask("¿Algo más?")
+            .set_should_end_session(True)
             .response
         )
 
@@ -166,6 +166,6 @@ class AddToQueueHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak(f"{title} agregada a la cola.")
-            .ask("¿Algo más?")
+            .set_should_end_session(True)
             .response
         )
