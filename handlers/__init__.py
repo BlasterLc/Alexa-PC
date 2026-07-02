@@ -21,3 +21,5 @@ _PS_KEY_SCRIPT = (
 def send_key(vk_code: int) -> None:
     script = _PS_KEY_SCRIPT.format(vk=hex(vk_code))
     subprocess.run(["powershell.exe", "-Command", script], check=True)
+
+ 

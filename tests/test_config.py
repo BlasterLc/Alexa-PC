@@ -15,5 +15,5 @@ def test_skill_id_loaded(monkeypatch):
 
 def test_apps_json_loads():
     assert isinstance(config.APPS, dict)
-    assert "Chrome" in config.APPS
+    assert "chrome" in config.APPS
 
