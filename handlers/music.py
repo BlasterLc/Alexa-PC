@@ -7,7 +7,7 @@ from ask_sdk_model import Response
 from ytmusicapi import YTMusic
 
 from handlers.base import send_key, VK_CODES
-from handlers.chrome_cdp import open_or_navigate
+from handlers.chrome_cdp import open_or_navigate, add_to_queue
 
 _OAUTH_PATH = Path(__file__).parent.parent / "browser.json"
 
@@ -134,6 +134,38 @@ class PlayArtistHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak(f"Reproduciendo música de {artist}.")
+            .ask("¿Algo más?")
+            .response
+        )
+
+
+class AddToQueueHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_intent_name("AddToQueueIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        song_name = handler_input.request_envelope.request.intent.slots["songName"].value
+        yt = YTMusic(str(_OAUTH_PATH), language="es")
+        results = yt.search(song_name, filter="songs", limit=1)
+        if not results:
+            return (
+                handler_input.response_builder
+                .speak("No encontré esa canción.")
+                .set_should_end_session(False)
+                .response
+            )
+        video_id = results[0]["videoId"]
+        title = results[0]["title"]
+        if not add_to_queue(video_id, song_name):
+            return (
+                handler_input.response_builder
+                .speak("No hay ninguna canción sonando, no pude agregar a la cola.")
+                .ask("¿Algo más?")
+                .response
+            )
+        return (
+            handler_input.response_builder
+            .speak(f"{title} agregada a la cola.")
             .ask("¿Algo más?")
             .response
         )

@@ -8,7 +8,7 @@ def test_send_key_calls_powershell():
         send_key(VK_CODES["play_pause"])
         assert mock_run.called
         cmd = mock_run.call_args[0][0]
-        assert "powershell.exe" in cmd
+        assert any("powershell.exe" in str(a) for a in cmd)
         assert "0xb3" in " ".join(str(a) for a in cmd)
 
 
