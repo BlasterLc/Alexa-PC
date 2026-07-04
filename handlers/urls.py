@@ -1,3 +1,4 @@
+import logging
 import subprocess
 
 import ask_sdk_core.utils as ask_utils
@@ -7,6 +8,14 @@ from ask_sdk_model import Response
 
 from config import URLS
 from handlers.base import CMD_EXE
+
+logger = logging.getLogger(__name__)
+
+
+def _normalize(text: str) -> str:
+    """Lowercase and drop non-alphanumerics so ASR word-splitting or
+    punctuation don't break matching (e.g. 'git hub' -> 'github')."""
+    return "".join(ch for ch in text.lower() if ch.isalnum())
 
 
 class UrlHandler(AbstractRequestHandler):
@@ -26,7 +35,12 @@ class UrlHandler(AbstractRequestHandler):
         except Exception:
             site_name = slot.value or ""
 
-        site_key = next((k for k in URLS if k.lower() == site_name.lower()), None)
+        target = _normalize(site_name)
+        site_key = next((k for k in URLS if _normalize(k) == target), None)
+        logger.info(
+            "OpenUrlIntent siteName: raw=%r usado=%r -> key=%r",
+            slot.value, site_name, site_key,
+        )
         if not site_key:
             return (
                 handler_input.response_builder
