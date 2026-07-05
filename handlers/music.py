@@ -209,3 +209,51 @@ class DislikeHandler(AbstractRequestHandler):
             .set_should_end_session(True)
             .response
         )
+
+
+class ShuffleHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_intent_name("ShuffleIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        if not player_action("shuffle")["ok"]:
+            return (
+                handler_input.response_builder
+                .speak("No hay ninguna canción sonando.")
+                .ask("¿Algo más?")
+                .response
+            )
+        return (
+            handler_input.response_builder
+            .speak("Aleatorio.")
+            .set_should_end_session(True)
+            .response
+        )
+
+
+class RepeatHandler(AbstractRequestHandler):
+    _MSG = {
+        "ONE": "Repitiendo esta canción.",
+        "ALL": "Repitiendo la lista.",
+        "OFF": "Repetición desactivada.",
+    }
+
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_intent_name("RepeatIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        res = player_action("repeat")
+        if not res["ok"]:
+            return (
+                handler_input.response_builder
+                .speak("No hay ninguna canción sonando.")
+                .ask("¿Algo más?")
+                .response
+            )
+        msg = self._MSG.get(res.get("state"), "Cambié el modo de repetición.")
+        return (
+            handler_input.response_builder
+            .speak(msg)
+            .set_should_end_session(True)
+            .response
+        )
