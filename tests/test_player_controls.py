@@ -1,6 +1,7 @@
 from unittest.mock import patch
 from handlers.chrome_cdp import player_action
 from handlers.music import LikeHandler, DislikeHandler
+from handlers.music import ShuffleHandler, RepeatHandler
 from tests.conftest import make_handler_input
 
 
@@ -153,3 +154,56 @@ def test_dislike_handler_success():
         DislikeHandler().handle(hi)
     hi.response_builder.speak.assert_called_with("No me gusta.")
     hi.response_builder.set_should_end_session.assert_called_with(True)
+
+
+def test_shuffle_handler_success():
+    hi = make_handler_input("ShuffleIntent")
+    with patch("handlers.music.player_action", return_value={"ok": True, "state": None}):
+        ShuffleHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("Aleatorio.")
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+
+
+def test_shuffle_handler_no_music():
+    hi = make_handler_input("ShuffleIntent")
+    with patch("handlers.music.player_action", return_value={"ok": False, "state": None}):
+        ShuffleHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("No hay ninguna canción sonando.")
+    hi.response_builder.ask.assert_called_with("¿Algo más?")
+
+
+def test_repeat_handler_one():
+    hi = make_handler_input("RepeatIntent")
+    with patch("handlers.music.player_action", return_value={"ok": True, "state": "ONE"}):
+        RepeatHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("Repitiendo esta canción.")
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+
+
+def test_repeat_handler_all():
+    hi = make_handler_input("RepeatIntent")
+    with patch("handlers.music.player_action", return_value={"ok": True, "state": "ALL"}):
+        RepeatHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("Repitiendo la lista.")
+
+
+def test_repeat_handler_off():
+    hi = make_handler_input("RepeatIntent")
+    with patch("handlers.music.player_action", return_value={"ok": True, "state": "OFF"}):
+        RepeatHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("Repetición desactivada.")
+
+
+def test_repeat_handler_unknown_state():
+    hi = make_handler_input("RepeatIntent")
+    with patch("handlers.music.player_action", return_value={"ok": True, "state": None}):
+        RepeatHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("Cambié el modo de repetición.")
+
+
+def test_repeat_handler_no_music():
+    hi = make_handler_input("RepeatIntent")
+    with patch("handlers.music.player_action", return_value={"ok": False, "state": None}):
+        RepeatHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("No hay ninguna canción sonando.")
+    hi.response_builder.ask.assert_called_with("¿Algo más?")
