@@ -322,6 +322,70 @@ def add_to_queue(video_id: str, query: str) -> bool:
             pass
 
 
+# --- Player-bar controls (like / dislike / shuffle / repeat) ---
+# Botones persistentes del player bar: no requieren búsqueda ni menús como add_to_queue.
+# player_action conecta una vez, clickea el control por selector y lee el estado resultante
+# cuando el DOM lo expone. Los selectores se validan en vivo; los tests mockean _cdp_eval.
+
+def _connect_yt_ws():
+    """Return a connected CDP websocket to the YT Music tab, or None.
+
+    Centraliza la plumbing reusable: localizar el tab de music.youtube.com y abrir el
+    websocket (reescribiendo host/puerto para el portproxy de WSL2).
+    """
+    tabs = _get_tabs()
+    if tabs is None:
+        return None
+    yt_tab = next(
+        (t for t in tabs
+         if "music.youtube.com" in t.get("url", "") and t.get("type") == "page"),
+        None,
+    )
+    if yt_tab is None:
+        return None
+    ws_url = yt_tab["webSocketDebuggerUrl"].replace(
+        f"127.0.0.1:{_CHROME_PORT}", f"{_win_host()}:{_PROXY_PORT}"
+    )
+    try:
+        return websocket.create_connection(ws_url, timeout=5)
+    except Exception as e:
+        logger.warning("player_action: cannot connect to CDP: %s", e)
+        return None
+
+
+_JS_SHUFFLE = (
+    "/*SHUFFLE*/(function(){"
+    "const bar = document.querySelector('ytmusic-player-bar');"
+    "const btn = bar && (bar.querySelector('.shuffle') || bar.querySelector('yt-icon-button.shuffle'));"
+    "if (!btn) return {ok:false};"
+    "(btn.querySelector('button') || btn).click();"
+    "return {ok:true};"
+    "})()"
+)
+
+
+def player_action(action: str) -> dict:
+    """Clickea un control del player bar de YT Music. Devuelve {"ok": bool, "state": str|None}.
+
+    ok=False si no hay tab de YT Music / CDP no disponible / el botón no se encontró.
+    state trae el estado resultante cuando se puede leer confiablemente, si no None.
+    """
+    ws = _connect_yt_ws()
+    if ws is None:
+        return {"ok": False, "state": None}
+    try:
+        if action == "shuffle":
+            res = _cdp_eval(ws, _JS_SHUFFLE)
+            ok = isinstance(res, dict) and res.get("ok") is True
+            return {"ok": ok, "state": None}
+        return {"ok": False, "state": None}
+    finally:
+        try:
+            ws.close()
+        except Exception:
+            pass
+
+
 def open_or_navigate(url: str) -> None:
     """Navigate the existing YT Music window to url, or open Chrome if not running."""
     tabs = _get_tabs()
