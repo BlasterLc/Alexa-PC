@@ -7,7 +7,7 @@ from ask_sdk_model import Response
 from handlers.music import (
     PlayPauseHandler, NextHandler, PrevHandler,
     VolumeUpHandler, VolumeDownHandler, PlaySongHandler, PlayArtistHandler,
-    AddToQueueHandler,
+    AddToQueueHandler, LikeHandler, DislikeHandler,
 )
 from handlers.system import SystemHandler, SystemConfirmHandler
 from handlers.apps import AppHandler
@@ -91,6 +91,8 @@ sb.add_request_handler(VolumeDownHandler())
 sb.add_request_handler(PlaySongHandler())
 sb.add_request_handler(PlayArtistHandler())
 sb.add_request_handler(AddToQueueHandler())
+sb.add_request_handler(LikeHandler())
+sb.add_request_handler(DislikeHandler())
 sb.add_request_handler(SystemHandler())
 sb.add_request_handler(SystemConfirmHandler())
 sb.add_request_handler(AppHandler())

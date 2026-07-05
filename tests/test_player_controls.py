@@ -1,5 +1,7 @@
 from unittest.mock import patch
 from handlers.chrome_cdp import player_action
+from handlers.music import LikeHandler, DislikeHandler
+from tests.conftest import make_handler_input
 
 
 _YT_TAB = [{
@@ -122,3 +124,32 @@ def test_repeat_state_unknown():
 def test_repeat_button_missing():
     result, _ = _run_player_action("repeat", {"/*REPEAT*/": {"ok": False}})
     assert result == {"ok": False, "state": None}
+
+
+def test_like_handler_can_handle():
+    assert LikeHandler().can_handle(make_handler_input("LikeIntent")) is True
+
+
+def test_like_handler_success():
+    hi = make_handler_input("LikeIntent")
+    with patch("handlers.music.player_action", return_value={"ok": True, "state": "LIKE"}):
+        LikeHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("Me gusta.")
+    hi.response_builder.set_should_end_session.assert_called_with(True)
+    hi.response_builder.ask.assert_not_called()
+
+
+def test_like_handler_no_music():
+    hi = make_handler_input("LikeIntent")
+    with patch("handlers.music.player_action", return_value={"ok": False, "state": None}):
+        LikeHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("No hay ninguna canción sonando.")
+    hi.response_builder.ask.assert_called_with("¿Algo más?")
+
+
+def test_dislike_handler_success():
+    hi = make_handler_input("DislikeIntent")
+    with patch("handlers.music.player_action", return_value={"ok": True, "state": "DISLIKE"}):
+        DislikeHandler().handle(hi)
+    hi.response_builder.speak.assert_called_with("No me gusta.")
+    hi.response_builder.set_should_end_session.assert_called_with(True)
