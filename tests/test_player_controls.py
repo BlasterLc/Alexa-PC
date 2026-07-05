@@ -57,3 +57,51 @@ def test_shuffle_ok():
 def test_shuffle_button_missing():
     result, _ = _run_player_action("shuffle", {"/*SHUFFLE*/": {"ok": False}})
     assert result == {"ok": False, "state": None}
+
+
+def test_like_when_indifferent_clicks():
+    """Estado INDIFFERENT -> clickea like, estado final LIKE."""
+    result, seen = _run_player_action("like", {
+        "/*LIKESTATE*/": "INDIFFERENT",
+        "/*LIKECLICK*/": {"ok": True},
+    })
+    assert result == {"ok": True, "state": "LIKE"}
+    assert "/*LIKECLICK*/" in seen
+
+
+def test_like_when_already_liked_is_idempotent():
+    """Ya en LIKE -> NO clickea (idempotente), estado sigue LIKE."""
+    result, seen = _run_player_action("like", {"/*LIKESTATE*/": "LIKE"})
+    assert result == {"ok": True, "state": "LIKE"}
+    assert "/*LIKECLICK*/" not in seen
+
+
+def test_dislike_when_indifferent_clicks():
+    result, seen = _run_player_action("dislike", {
+        "/*LIKESTATE*/": "INDIFFERENT",
+        "/*LIKECLICK*/": {"ok": True},
+    })
+    assert result == {"ok": True, "state": "DISLIKE"}
+    assert "/*LIKECLICK*/" in seen
+
+
+def test_dislike_when_already_disliked_is_idempotent():
+    result, seen = _run_player_action("dislike", {"/*LIKESTATE*/": "DISLIKE"})
+    assert result == {"ok": True, "state": "DISLIKE"}
+    assert "/*LIKECLICK*/" not in seen
+
+
+def test_like_state_unreadable():
+    """Si no se puede leer el like renderer (None) -> ok False."""
+    result, _ = _run_player_action("like", {"/*LIKESTATE*/": None})
+    assert result == {"ok": False, "state": None}
+
+
+def test_like_click_fails_returns_false_with_stale_state():
+    """Estado no-target pero el click no se confirma -> ok False, state = estado previo."""
+    result, seen = _run_player_action("like", {
+        "/*LIKESTATE*/": "INDIFFERENT",
+        "/*LIKECLICK*/": {"ok": False},
+    })
+    assert result == {"ok": False, "state": "INDIFFERENT"}
+    assert "/*LIKECLICK*/" in seen
