@@ -105,3 +105,20 @@ def test_like_click_fails_returns_false_with_stale_state():
     })
     assert result == {"ok": False, "state": "INDIFFERENT"}
     assert "/*LIKECLICK*/" in seen
+
+
+def test_repeat_reads_state():
+    result, seen = _run_player_action("repeat", {"/*REPEAT*/": {"ok": True, "state": "ALL"}})
+    assert result == {"ok": True, "state": "ALL"}
+    assert "/*REPEAT*/" in seen
+
+
+def test_repeat_state_unknown():
+    """Clickea pero no pudo leer el modo -> state None, ok True."""
+    result, _ = _run_player_action("repeat", {"/*REPEAT*/": {"ok": True, "state": None}})
+    assert result == {"ok": True, "state": None}
+
+
+def test_repeat_button_missing():
+    result, _ = _run_player_action("repeat", {"/*REPEAT*/": {"ok": False}})
+    assert result == {"ok": False, "state": None}

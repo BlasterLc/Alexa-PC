@@ -391,6 +391,23 @@ def _js_like_click(which: str) -> str:
     )
 
 
+_JS_REPEAT = (
+    "/*REPEAT*/(function(){"
+    "const bar = document.querySelector('ytmusic-player-bar');"
+    "const btn = bar && (bar.querySelector('.repeat') || bar.querySelector('yt-icon-button.repeat'));"
+    "if (!btn) return {ok:false, state:null};"
+    "(btn.querySelector('button') || btn).click();"
+    "const el = btn.querySelector('button') || btn;"
+    "const label = (el.getAttribute('aria-label') || '').toLowerCase();"
+    "let state = null;"
+    "if (label.includes('canci') || label.includes('one')) state = 'ONE';"
+    "else if (label.includes('todas') || label.includes('lista') || label.includes('all')) state = 'ALL';"
+    "else if (label.includes('desactiv') || label.includes('off')) state = 'OFF';"
+    "return {ok:true, state:state};"
+    "})()"
+)
+
+
 def player_action(action: str) -> dict:
     """Clickea un control del player bar de YT Music. Devuelve {"ok": bool, "state": str|None}.
 
@@ -415,6 +432,11 @@ def player_action(action: str) -> dict:
                 if not (isinstance(res, dict) and res.get("ok") is True):
                     return {"ok": False, "state": cur}
             return {"ok": True, "state": target}
+        if action == "repeat":
+            res = _cdp_eval(ws, _JS_REPEAT)
+            if not (isinstance(res, dict) and res.get("ok") is True):
+                return {"ok": False, "state": None}
+            return {"ok": True, "state": res.get("state")}
         return {"ok": False, "state": None}
     finally:
         try:
