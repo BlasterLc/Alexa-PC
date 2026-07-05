@@ -364,6 +364,33 @@ _JS_SHUFFLE = (
 )
 
 
+_JS_LIKE_STATE = (
+    "/*LIKESTATE*/(function(){"
+    "const bar = document.querySelector('ytmusic-player-bar');"
+    "const lr = bar && bar.querySelector('ytmusic-like-button-renderer');"
+    "if (!lr) return null;"
+    "const d = lr.data || (lr.__data && lr.__data.data);"
+    "return d ? d.likeStatus : null;"
+    "})()"
+)
+
+
+def _js_like_click(which: str) -> str:
+    """which = 'like' | 'dislike'. Clickea el botón correspondiente del player bar."""
+    sel = ("#button-shape-like button, .like"
+           if which == "like" else "#button-shape-dislike button, .dislike")
+    return (
+        "/*LIKECLICK*/(function(sel){"
+        "const bar = document.querySelector('ytmusic-player-bar');"
+        "const lr = bar && bar.querySelector('ytmusic-like-button-renderer');"
+        "if (!lr) return {ok:false};"
+        "const btn = lr.querySelector(sel);"
+        "if (!btn) return {ok:false};"
+        "btn.click(); return {ok:true};"
+        "})(" + json.dumps(sel) + ")"
+    )
+
+
 def player_action(action: str) -> dict:
     """Clickea un control del player bar de YT Music. Devuelve {"ok": bool, "state": str|None}.
 
@@ -378,6 +405,16 @@ def player_action(action: str) -> dict:
             res = _cdp_eval(ws, _JS_SHUFFLE)
             ok = isinstance(res, dict) and res.get("ok") is True
             return {"ok": ok, "state": None}
+        if action in ("like", "dislike"):
+            target = "LIKE" if action == "like" else "DISLIKE"
+            cur = _cdp_eval(ws, _JS_LIKE_STATE)
+            if cur not in ("LIKE", "DISLIKE", "INDIFFERENT"):
+                return {"ok": False, "state": None}
+            if cur != target:
+                res = _cdp_eval(ws, _js_like_click(action))
+                if not (isinstance(res, dict) and res.get("ok") is True):
+                    return {"ok": False, "state": cur}
+            return {"ok": True, "state": target}
         return {"ok": False, "state": None}
     finally:
         try:
