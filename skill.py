@@ -36,7 +36,8 @@ class HelpHandler(AbstractRequestHandler):
             handler_input.response_builder
             .speak(
                 "Puedes decir: pausa, siguiente, anterior, sube el volumen, "
-                "toca una canción, toca algo de un artista, "
+                "toca una canción, toca algo de un artista, agrega a la cola, "
+                "me gusta, no me gusta, pon aleatorio, repite, "
                 "abre o cierra una app, apaga la pc, reinicia, o bloquea la pantalla."
             )
             .ask("¿Qué quieres hacer?")
