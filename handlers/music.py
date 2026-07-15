@@ -7,7 +7,7 @@ from ask_sdk_model import Response
 from ytmusicapi import YTMusic
 
 from handlers.base import send_key, VK_CODES
-from handlers.chrome_cdp import open_or_navigate, add_to_queue
+from handlers.chrome_cdp import open_or_navigate, add_to_queue, player_action
 
 _OAUTH_PATH = Path(__file__).parent.parent / "browser.json"
 
@@ -166,6 +166,94 @@ class AddToQueueHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
             .speak(f"{title} agregada a la cola.")
+            .set_should_end_session(True)
+            .response
+        )
+
+
+class LikeHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_intent_name("LikeIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        if not player_action("like")["ok"]:
+            return (
+                handler_input.response_builder
+                .speak("No hay ninguna canción sonando.")
+                .ask("¿Algo más?")
+                .response
+            )
+        return (
+            handler_input.response_builder
+            .speak("Me gusta.")
+            .set_should_end_session(True)
+            .response
+        )
+
+
+class DislikeHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_intent_name("DislikeIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        if not player_action("dislike")["ok"]:
+            return (
+                handler_input.response_builder
+                .speak("No hay ninguna canción sonando.")
+                .ask("¿Algo más?")
+                .response
+            )
+        return (
+            handler_input.response_builder
+            .speak("No me gusta.")
+            .set_should_end_session(True)
+            .response
+        )
+
+
+class ShuffleHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_intent_name("ShuffleIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        if not player_action("shuffle")["ok"]:
+            return (
+                handler_input.response_builder
+                .speak("No hay ninguna canción sonando.")
+                .ask("¿Algo más?")
+                .response
+            )
+        return (
+            handler_input.response_builder
+            .speak("Aleatorio.")
+            .set_should_end_session(True)
+            .response
+        )
+
+
+class RepeatHandler(AbstractRequestHandler):
+    _MSG = {
+        "ONE": "Repitiendo esta canción.",
+        "ALL": "Repitiendo la lista.",
+        "OFF": "Repetición desactivada.",
+    }
+
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return ask_utils.is_intent_name("RepeatIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        res = player_action("repeat")
+        if not res["ok"]:
+            return (
+                handler_input.response_builder
+                .speak("No hay ninguna canción sonando.")
+                .ask("¿Algo más?")
+                .response
+            )
+        msg = self._MSG.get(res.get("state"), "Cambié el modo de repetición.")
+        return (
+            handler_input.response_builder
+            .speak(msg)
             .set_should_end_session(True)
             .response
         )

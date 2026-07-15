@@ -7,7 +7,7 @@ from ask_sdk_model import Response
 from handlers.music import (
     PlayPauseHandler, NextHandler, PrevHandler,
     VolumeUpHandler, VolumeDownHandler, PlaySongHandler, PlayArtistHandler,
-    AddToQueueHandler,
+    AddToQueueHandler, LikeHandler, DislikeHandler, ShuffleHandler, RepeatHandler,
 )
 from handlers.system import SystemHandler, SystemConfirmHandler
 from handlers.apps import AppHandler
@@ -36,7 +36,8 @@ class HelpHandler(AbstractRequestHandler):
             handler_input.response_builder
             .speak(
                 "Puedes decir: pausa, siguiente, anterior, sube el volumen, "
-                "toca una canción, toca algo de un artista, "
+                "toca una canción, toca algo de un artista, agrega a la cola, "
+                "me gusta, no me gusta, pon aleatorio, repite, "
                 "abre o cierra una app, apaga la pc, reinicia, o bloquea la pantalla."
             )
             .ask("¿Qué quieres hacer?")
@@ -91,6 +92,10 @@ sb.add_request_handler(VolumeDownHandler())
 sb.add_request_handler(PlaySongHandler())
 sb.add_request_handler(PlayArtistHandler())
 sb.add_request_handler(AddToQueueHandler())
+sb.add_request_handler(LikeHandler())
+sb.add_request_handler(DislikeHandler())
+sb.add_request_handler(ShuffleHandler())
+sb.add_request_handler(RepeatHandler())
 sb.add_request_handler(SystemHandler())
 sb.add_request_handler(SystemConfirmHandler())
 sb.add_request_handler(AppHandler())
