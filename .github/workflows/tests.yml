@@ -25,4 +25,6 @@ jobs:
           pip install -r requirements.txt
 
       - name: Correr pruebas
+        env:
+          SKILL_ID: amzn1.ask.skill.test
         run: python -m pytest -v
