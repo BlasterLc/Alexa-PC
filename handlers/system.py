@@ -1,12 +1,12 @@
 import subprocess
 
 import ask_sdk_core.utils as ask_utils
-from handlers.base import POWERSHELL_EXE
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.handler_input import HandlerInput
-from ask_sdk_model import Response
+from ask_sdk_model import IntentConfirmationStatus, Response
+from ask_sdk_model.dialog import DelegateDirective
 
-_DESTRUCTIVE = {"apagar", "reiniciar"}
+from handlers.base import POWERSHELL_EXE
 
 _PS_COMMANDS: dict[str, list[str]] = {
     "apagar": [POWERSHELL_EXE, "Stop-Computer", "-Force"],
@@ -20,85 +20,67 @@ _SYNONYMS: dict[str, str] = {
     "bloquea": "bloquear", "bloqueá": "bloquear", "lock": "bloquear",
 }
 
+_DONE_MSG: dict[str, str] = {
+    "apagar": "Apagando la PC.",
+    "reiniciar": "Reiniciando la PC.",
+    "bloquear": "Pantalla bloqueada.",
+}
+
+
+def _resolve_action(slot) -> str:
+    """Valor canónico del slot `action`; si Alexa no lo resolvió, cae a lo
+    hablado mapeando sinónimos a mano."""
+    if slot is None:
+        return ""
+    try:
+        resolutions = slot.resolutions.resolutions_per_authority
+        if resolutions and resolutions[0].status.code.value == "ER_SUCCESS_MATCH":
+            return resolutions[0].values[0].value.name
+    except (AttributeError, IndexError):
+        pass
+    raw = (slot.value or "").lower()
+    return _SYNONYMS.get(raw, raw)
+
 
 class SystemHandler(AbstractRequestHandler):
     def can_handle(self, handler_input: HandlerInput) -> bool:
         return ask_utils.is_intent_name("SystemIntent")(handler_input)
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        slot = handler_input.request_envelope.request.intent.slots["action"]
-        # Preferir el valor canónico que resuelve Alexa vía SYSTEM_ACTION_TYPE;
-        # si no hay resolución, caer a lo hablado y mapear sinónimos a mano.
-        action = ""
-        try:
-            resolutions = slot.resolutions.resolutions_per_authority
-            if resolutions and resolutions[0].status.code.value == "ER_SUCCESS_MATCH":
-                action = resolutions[0].values[0].value.name
-        except (AttributeError, IndexError):
-            pass
-        if not action:
-            raw = (slot.value or "").lower()
-            action = _SYNONYMS.get(raw, raw)
+        intent = handler_input.request_envelope.request.intent
+        rb = handler_input.response_builder
 
-        if action in _DESTRUCTIVE:
-            handler_input.attributes_manager.session_attributes["pending_action"] = action
-            return (
-                handler_input.response_builder
-                .speak(f"¿Seguro que quieres {action} la PC?")
-                .ask("Di sí para confirmar o no para cancelar.")
-                .response
-            )
+        # La confirmación la maneja Alexa (Intent Confirmation en el modelo).
+        if intent.confirmation_status == IntentConfirmationStatus.DENIED:
+            return rb.speak("Cancelado.").set_should_end_session(True).response
 
-        if action == "bloquear":
-            subprocess.run(_PS_COMMANDS["bloquear"], check=True)
-            return (
-                handler_input.response_builder
-                .speak("Pantalla bloqueada.")
-                .set_should_end_session(True)
-                .response
-            )
+        if intent.confirmation_status != IntentConfirmationStatus.CONFIRMED:
+            # Sin delegación automática: pedirle a Alexa que corra el prompt.
+            return rb.add_directive(DelegateDirective()).response
 
-        return (
-            handler_input.response_builder
-            .speak("No entendí esa acción.")
-            .ask("¿Algo más?")
-            .response
-        )
+        action = _resolve_action((intent.slots or {}).get("action"))
+        if action not in _PS_COMMANDS:
+            return rb.speak("No entendí esa acción.").set_should_end_session(True).response
+
+        subprocess.run(_PS_COMMANDS[action], check=True)
+        return rb.speak(_DONE_MSG[action]).set_should_end_session(True).response
 
 
-class SystemConfirmHandler(AbstractRequestHandler):
+class StrayYesNoHandler(AbstractRequestHandler):
+    """`AMAZON.YesIntent` / `AMAZON.NoIntent` sueltos, fuera del flujo de
+    confirmación (que lo maneja Alexa). Responde limpio en vez de caer en el
+    exception handler."""
+
     def can_handle(self, handler_input: HandlerInput) -> bool:
-        # Dueño de sí/no siempre: si no hay confirmación pendiente (p. ej. la
-        # sesión expiró), responde en vez de dejar el intent sin handler.
         return (
             ask_utils.is_intent_name("AMAZON.YesIntent")(handler_input)
             or ask_utils.is_intent_name("AMAZON.NoIntent")(handler_input)
         )
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        session = handler_input.attributes_manager.session_attributes
-        action = session.pop("pending_action", None)
-
-        if not action:
-            return (
-                handler_input.response_builder
-                .speak("No hay nada que confirmar.")
-                .set_should_end_session(True)
-                .response
-            )
-
-        if ask_utils.is_intent_name("AMAZON.NoIntent")(handler_input):
-            return (
-                handler_input.response_builder
-                .speak("Cancelado.")
-                .set_should_end_session(True)
-                .response
-            )
-
-        subprocess.run(_PS_COMMANDS[action], check=True)
         return (
             handler_input.response_builder
-            .speak(f"Ejecutando {action}.")
+            .speak("No hay nada que confirmar.")
             .set_should_end_session(True)
             .response
         )

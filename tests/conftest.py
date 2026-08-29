@@ -1,16 +1,18 @@
 from unittest.mock import MagicMock
-from ask_sdk_model import IntentRequest
+from ask_sdk_model import IntentRequest, IntentConfirmationStatus
 
 
 def make_handler_input(
     intent_name,
     slots: dict[str, str] | None = None,
     session_attributes: dict | None = None,
+    confirmation_status=None,
 ):
     hi = MagicMock()
     intent = MagicMock()
     intent.name = intent_name
     intent.slots = {}
+    intent.confirmation_status = confirmation_status or IntentConfirmationStatus.NONE
     if slots:
         for name, value in slots.items():
             slot = MagicMock()

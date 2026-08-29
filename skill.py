@@ -13,7 +13,7 @@ from handlers.music import (
     VolumeUpHandler, VolumeDownHandler, PlaySongHandler, PlayArtistHandler,
     AddToQueueHandler, LikeHandler, DislikeHandler, ShuffleHandler, RepeatHandler,
 )
-from handlers.system import SystemHandler, SystemConfirmHandler
+from handlers.system import SystemHandler, StrayYesNoHandler
 from handlers.apps import AppHandler
 from handlers.urls import UrlHandler
 
@@ -120,7 +120,7 @@ sb.add_request_handler(DislikeHandler())
 sb.add_request_handler(ShuffleHandler())
 sb.add_request_handler(RepeatHandler())
 sb.add_request_handler(SystemHandler())
-sb.add_request_handler(SystemConfirmHandler())
+sb.add_request_handler(StrayYesNoHandler())
 sb.add_request_handler(AppHandler())
 sb.add_request_handler(UrlHandler())
 sb.add_request_handler(HelpHandler())
