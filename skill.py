@@ -8,8 +8,6 @@ from ask_sdk_core.dispatch_components import (
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 
-logger = logging.getLogger(__name__)
-
 from handlers.music import (
     PlayPauseHandler, NextHandler, PrevHandler,
     VolumeUpHandler, VolumeDownHandler, PlaySongHandler, PlayArtistHandler,
@@ -18,6 +16,8 @@ from handlers.music import (
 from handlers.system import SystemHandler, SystemConfirmHandler
 from handlers.apps import AppHandler
 from handlers.urls import UrlHandler
+
+logger = logging.getLogger(__name__)
 
 
 class LaunchHandler(AbstractRequestHandler):
