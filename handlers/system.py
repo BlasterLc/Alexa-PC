@@ -68,20 +68,26 @@ class SystemHandler(AbstractRequestHandler):
 
 class SystemConfirmHandler(AbstractRequestHandler):
     def can_handle(self, handler_input: HandlerInput) -> bool:
-        session = handler_input.attributes_manager.session_attributes
+        # Dueño de sí/no siempre: si no hay confirmación pendiente (p. ej. la
+        # sesión expiró), responde en vez de dejar el intent sin handler.
         return (
             ask_utils.is_intent_name("AMAZON.YesIntent")(handler_input)
-            and "pending_action" in session
-        ) or (
-            ask_utils.is_intent_name("AMAZON.NoIntent")(handler_input)
-            and "pending_action" in session
+            or ask_utils.is_intent_name("AMAZON.NoIntent")(handler_input)
         )
 
     def handle(self, handler_input: HandlerInput) -> Response:
         session = handler_input.attributes_manager.session_attributes
         action = session.pop("pending_action", None)
 
-        if ask_utils.is_intent_name("AMAZON.NoIntent")(handler_input) or not action:
+        if not action:
+            return (
+                handler_input.response_builder
+                .speak("No hay nada que confirmar.")
+                .set_should_end_session(True)
+                .response
+            )
+
+        if ask_utils.is_intent_name("AMAZON.NoIntent")(handler_input):
             return (
                 handler_input.response_builder
                 .speak("Cancelado.")

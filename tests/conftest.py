@@ -2,7 +2,11 @@ from unittest.mock import MagicMock
 from ask_sdk_model import IntentRequest
 
 
-def make_handler_input(intent_name, slots: dict[str, str] | None = None):
+def make_handler_input(
+    intent_name,
+    slots: dict[str, str] | None = None,
+    session_attributes: dict | None = None,
+):
     hi = MagicMock()
     intent = MagicMock()
     intent.name = intent_name
@@ -15,6 +19,9 @@ def make_handler_input(intent_name, slots: dict[str, str] | None = None):
     request = MagicMock(spec=IntentRequest)
     request.intent = intent
     hi.request_envelope.request = request
+    hi.attributes_manager.session_attributes = (
+        session_attributes if session_attributes is not None else {}
+    )
     rb = MagicMock()
     rb.speak.return_value = rb
     rb.ask.return_value = rb

@@ -1,8 +1,14 @@
+import logging
+
 import ask_sdk_core.utils as ask_utils
 from ask_sdk_core.skill_builder import SkillBuilder
-from ask_sdk_core.dispatch_components import AbstractRequestHandler
+from ask_sdk_core.dispatch_components import (
+    AbstractRequestHandler, AbstractExceptionHandler,
+)
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
+
+logger = logging.getLogger(__name__)
 
 from handlers.music import (
     PlayPauseHandler, NextHandler, PrevHandler,
@@ -82,6 +88,23 @@ class SessionEndedHandler(AbstractRequestHandler):
         return handler_input.response_builder.response
 
 
+class CatchAllExceptionHandler(AbstractExceptionHandler):
+    """Última red: cualquier intent sin handler o error en un handler responde
+    hablado en vez de tirar un 500 ("hubo un problema con la skill")."""
+
+    def can_handle(self, handler_input: HandlerInput, exception: Exception) -> bool:
+        return True
+
+    def handle(self, handler_input: HandlerInput, exception: Exception) -> Response:
+        logger.exception("Error no manejado: %s", exception)
+        return (
+            handler_input.response_builder
+            .speak("Perdón, algo salió mal. Intenta de nuevo.")
+            .set_should_end_session(True)
+            .response
+        )
+
+
 sb = SkillBuilder()
 sb.add_request_handler(LaunchHandler())
 sb.add_request_handler(PlayPauseHandler())
@@ -104,5 +127,6 @@ sb.add_request_handler(HelpHandler())
 sb.add_request_handler(CancelStopHandler())
 sb.add_request_handler(FallbackHandler())
 sb.add_request_handler(SessionEndedHandler())
+sb.add_exception_handler(CatchAllExceptionHandler())
 
 skill = sb.create()
