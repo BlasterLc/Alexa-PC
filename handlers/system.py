@@ -15,9 +15,9 @@ _PS_COMMANDS: dict[str, list[str]] = {
 }
 
 _SYNONYMS: dict[str, str] = {
-    "apagá": "apagar", "shutdown": "apagar",
-    "reiniciá": "reiniciar", "restart": "reiniciar",
-    "bloqueá": "bloquear", "bloquea": "bloquear", "lock": "bloquear",
+    "apaga": "apagar", "apagá": "apagar", "shutdown": "apagar",
+    "reinicia": "reiniciar", "reiniciá": "reiniciar", "restart": "reiniciar",
+    "bloquea": "bloquear", "bloqueá": "bloquear", "lock": "bloquear",
 }
 
 
@@ -26,8 +26,19 @@ class SystemHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("SystemIntent")(handler_input)
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        raw = handler_input.request_envelope.request.intent.slots["action"].value or ""
-        action = _SYNONYMS.get(raw.lower(), raw.lower())
+        slot = handler_input.request_envelope.request.intent.slots["action"]
+        # Preferir el valor canónico que resuelve Alexa vía SYSTEM_ACTION_TYPE;
+        # si no hay resolución, caer a lo hablado y mapear sinónimos a mano.
+        action = ""
+        try:
+            resolutions = slot.resolutions.resolutions_per_authority
+            if resolutions and resolutions[0].status.code.value == "ER_SUCCESS_MATCH":
+                action = resolutions[0].values[0].value.name
+        except (AttributeError, IndexError):
+            pass
+        if not action:
+            raw = (slot.value or "").lower()
+            action = _SYNONYMS.get(raw, raw)
 
         if action in _DESTRUCTIVE:
             handler_input.attributes_manager.session_attributes["pending_action"] = action

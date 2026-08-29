@@ -28,3 +28,19 @@ def test_restart_asks_for_confirmation():
     with patch("handlers.system.subprocess.run"):
         SystemHandler().handle(hi)
         hi.response_builder.ask.assert_called()
+
+
+def test_shutdown_via_spoken_synonym():
+    # Alexa manda lo hablado ("apaga"), no el canónico: se mapea a "apagar".
+    hi = make_handler_input("SystemIntent", slots={"action": "apaga"})
+    with patch("handlers.system.subprocess.run"):
+        SystemHandler().handle(hi)
+        hi.response_builder.ask.assert_called()
+
+
+def test_unknown_action_is_rejected():
+    hi = make_handler_input("SystemIntent", slots={"action": "explota"})
+    with patch("handlers.system.subprocess.run") as mock_run:
+        SystemHandler().handle(hi)
+        mock_run.assert_not_called()
+        hi.response_builder.speak.assert_called_with("No entendí esa acción.")
