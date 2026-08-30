@@ -1,6 +1,8 @@
-{"chrome": "chrome.exe",
-"discord": "C:\\Users\\Blaster\\AppData\\Local\\Discord\\app-1.0.9243\\Discord.exe",
-"steam": "D:\\Steam\\steam.exe",
-"vs Code": "Code.exe",
-"notepad": "notepad.exe",
-"opera": "opera.exe"}
+{
+  "chrome": "chrome.exe",
+  "discord": ["C:\\Users\\Blaster\\AppData\\Local\\Discord\\Update.exe", "--processStart", "Discord.exe"],
+  "steam": "D:\\Steam\\steam.exe",
+  "vs code": "Code.exe",
+  "notepad": "notepad.exe",
+  "opera": "opera.exe"
+}
