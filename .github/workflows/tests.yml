@@ -27,4 +27,5 @@ jobs:
       - name: Correr pruebas
         env:
           SKILL_ID: amzn1.ask.skill.test
+          ENDPOINT_TOKEN: test-token
         run: python -m pytest -v

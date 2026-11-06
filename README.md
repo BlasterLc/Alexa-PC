@@ -106,7 +106,7 @@ acciones destructivas (apagar, reiniciar) piden confirmación por voz antes de c
 
 ```
 .
-├── main.py            # Endpoint FastAPI /alexa
+├── main.py            # Endpoint FastAPI /alexa/<token>
 ├── skill.py           # Registro de handlers (Alexa Skills Kit)
 ├── config.py          # Carga de .env, apps.json y urls.json
 ├── apps.json          # Nombre de voz → ejecutable de Windows
@@ -131,9 +131,9 @@ Python 3.12.
 
 1. **Skill de Alexa.** Crea una skill personalizada en el Alexa Developer Console con los
    intents que registra `skill.py` (uno por handler). Apunta su endpoint a
-   `https://<tu-subdominio>.<tu-dominio>/alexa`.
+   `https://<tu-subdominio>.<tu-dominio>/alexa/<ENDPOINT_TOKEN>` (el token se define en el paso 3).
 2. **Dependencias.** `python -m venv .venv && .venv/bin/pip install -r requirements.txt`
-3. **Configuración.** Copia `.env.example` a `.env` y pon el ID de tu skill en `SKILL_ID`.
+3. **Configuración.** Copia `.env.example` a `.env`, pon el ID de tu skill en `SKILL_ID` y una cadena aleatoria larga en `ENDPOINT_TOKEN` (`openssl rand -hex 24`). El servidor no arranca sin ambas.
 4. **Auth de YouTube Music.** Genera `browser.json` con `ytmusicapi` (queda fuera del repo).
 5. **Túnel.** Instala `cloudflared`, crea un túnel con nombre y enruta
    `<tu-subdominio>.<tu-dominio>` hacia `http://localhost:8000`.
@@ -171,4 +171,19 @@ El mismo comando corre en GitHub Actions en cada push y pull request a `main`.
 
 ---
 
-Proyecto personal.
+## Seguridad
+
+Este servidor puede bloquear, apagar y reiniciar el equipo y abrir o cerrar programas, así que no debe responderle a cualquiera. El endpoint:
+
+- vive en una URL con un **token secreto** (`/alexa/<ENDPOINT_TOKEN>`); cualquier otra ruta responde 404;
+- rechaza peticiones cuyo `applicationId` no sea el de **tu skill** (`SKILL_ID`);
+- rechaza peticiones con más de 150 s de antigüedad (anti-reenvío);
+- escucha solo en `127.0.0.1`: el túnel de Cloudflare se conecta desde la misma máquina.
+
+Límite conocido: no verifica la firma criptográfica de Alexa (cadena de certificados `SignatureCertChainUrl`), así que la protección descansa en que el token y el `SKILL_ID` sigan siendo secretos. Si publicas un fork, genera tus propios valores y no los subas al repositorio (`.env` está en `.gitignore`). Las rutas de Windows de `apps.json` y de Chrome usan `%LOCALAPPDATA%`, que expande `cmd.exe`.
+
+---
+
+## Licencia
+
+MIT, ver `LICENSE`. Proyecto personal.

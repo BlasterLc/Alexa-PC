@@ -1,6 +1,6 @@
 {
   "chrome": "chrome.exe",
-  "discord": ["C:\\Users\\Blaster\\AppData\\Local\\Discord\\Update.exe", "--processStart", "Discord.exe"],
+  "discord": ["%LOCALAPPDATA%\\Discord\\Update.exe", "--processStart", "Discord.exe"],
   "steam": "D:\\Steam\\steam.exe",
   "vs code": "Code.exe",
   "notepad": "notepad.exe",

@@ -8,6 +8,7 @@ import config
 
 def test_skill_id_loaded(monkeypatch):
     monkeypatch.setenv("SKILL_ID", "amzn1.ask.skill.test")
+    monkeypatch.setenv("ENDPOINT_TOKEN", "test-token")
     monkeypatch.setenv("PORT", "8000")
     importlib.reload(config)
     assert config.SKILL_ID == "amzn1.ask.skill.test"

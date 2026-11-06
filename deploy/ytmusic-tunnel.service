@@ -1,3 +1,4 @@
+# Replace YOUR_USER (and the paths) with your Linux user before installing.
 [Unit]
 Description=Cloudflare Tunnel ytmusic
 After=network-online.target
@@ -5,8 +6,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=blaster
-ExecStart=/usr/local/bin/cloudflared tunnel --config /home/blaster/.cloudflared/config.yml run ytmusic
+User=YOUR_USER
+ExecStart=/usr/local/bin/cloudflared tunnel --config /home/YOUR_USER/.cloudflared/config.yml run ytmusic
 Restart=on-failure
 RestartSec=10
 

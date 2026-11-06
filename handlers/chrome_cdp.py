@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 _CHROME_PORT = 9222   # Chrome debug port (Windows localhost only)
 _PROXY_PORT = 9223    # netsh portproxy port reachable from WSL2
 _CHROME_EXE = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-_USER_DATA_DIR = "C:\\Users\\Blaster\\AppData\\Local\\ChromeYTMusic"
+_USER_DATA_DIR = "%LOCALAPPDATA%\\ChromeYTMusic"   # expanded by cmd.exe, so it works for any Windows user
 
 
 def _win_host() -> str:

@@ -1,3 +1,7 @@
+import os
+
+os.environ.setdefault("SKILL_ID", "amzn1.ask.skill.test")
+os.environ.setdefault("ENDPOINT_TOKEN", "test-token")
 from unittest.mock import MagicMock
 from ask_sdk_model import IntentRequest, IntentConfirmationStatus
 

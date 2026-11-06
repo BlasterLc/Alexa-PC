@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SKILL_ID: str = os.environ["SKILL_ID"]
+# secret segment of the endpoint URL (/alexa/<token>); without it the server does not start
+ENDPOINT_TOKEN: str = os.environ["ENDPOINT_TOKEN"]
 PORT: int = int(os.getenv("PORT", "8000"))
 
 _apps_path = Path(__file__).parent / "apps.json"
